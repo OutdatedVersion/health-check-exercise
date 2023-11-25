@@ -17,7 +17,7 @@ export const httpMethodSchema = z.enum([
 export const healthCheckConfigSchema = z.object({
   name: z.string(),
   url: z.string().url(),
-  method: httpMethodSchema.optional(),
+  method: httpMethodSchema.default('GET'),
   headers: z.record(z.string(), z.string()).optional(),
   body: z.string().optional(),
 });
