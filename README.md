@@ -17,4 +17,5 @@ totally decouples job run time from the runner. Though it was abandoned in favor
 1. Clone project
 1. Run `npm clean-install`
 1. Run `npm start`
-   1. Set `DEBUG=health-check:runner` environment variable for more context, if you'd like
+   - You can also run it directly with `npm run build && node dist/cli.js`
+   - Set `DEBUG=health-check:runner` environment variable for more context, if you'd like
