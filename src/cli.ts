@@ -1,9 +1,14 @@
 import { readFile } from 'node:fs/promises';
 import { parseDocument } from 'yaml';
 import * as c from 'ansi-colors';
-import { HealthCheckConfig, createHealthCheckJob, yoloSchema } from './health';
+import {
+  HealthCheckConfig,
+  createHealthCheckJob,
+  healthCheckConfigSchema,
+} from './health';
 import { z } from 'zod';
-import { createRunner } from './runner';
+import { setInterval } from 'node:timers/promises';
+import { runJobs } from './job';
 
 const main = async (args = process.argv.slice(2)) => {
   if (args.length < 1) {
@@ -18,68 +23,54 @@ const main = async (args = process.argv.slice(2)) => {
 
   // default error provides plenty of info especially considering our audience is developers
   const manifest = await readFile(args[0], 'utf8');
-  const stuff = parseDocument(manifest).toJSON();
-  const config = z.array(yoloSchema).parse(stuff);
+  const configAsYaml = parseDocument(manifest).toJSON();
+  const config = z.array(healthCheckConfigSchema).parse(configAsYaml);
 
   const ac = new AbortController();
 
-  const { run, locks, bus } = createRunner<HealthCheckConfig>(
-    15_000,
-    config.map(createHealthCheckJob)
-  );
-
   process.on('SIGINT', () => {
-    console.log(`${c.bold(c.yellow('warn'))} cancelling ${locks.size} jobs..`);
-    ac.abort('user asked to stop monitoring');
+    ac.abort('user requested monitoring stop');
   });
 
-  bus.on('job:end', (data) => {
-    console.log(data);
-  });
-  // bus.on('job:success', ({ id }) => {
-  //   console.log(`${c.bold(c.gray('[runner]'))} job '${id}' succeeded`);
-  // });
-  // bus.on('job:error', ({ id, error }) => {
-  //   console.log(`${c.bold(c.gray('[runner]'))} job '${id}' failed`, error);
-  // });
+  const jobs = config.map(createHealthCheckJob);
+  const history = new Map<string, { total: number; ok: number }>();
 
-  const tracking = new Map<string, { total: number; ok: number }>();
-  bus.on('batch:end', ({ jobs }) => {
-    for (const job of jobs) {
-      if (job.outcome === 'error') {
+  const tick = async () => {
+    const results = await runJobs<HealthCheckConfig>(ac.signal, jobs);
+
+    for (const result of results) {
+      if (!result.ok) {
         continue;
       }
 
-      const { hostname } = new URL(job.config.url);
-      const data = tracking.get(hostname) ?? {
-        total: 0,
-        ok: 0,
-      };
+      const { hostname } = new URL(result.config.url);
+      const record = history.get(hostname) ?? { total: 0, ok: 0 };
 
-      const ok = job.checks.every((c) => c.passed);
-      if (ok) {
-        data.ok += 1;
+      record.total += 1;
+      const isUp = result.checks.every((c) => c.ok);
+      if (isUp) {
+        record.ok += 1;
       }
-      data.total += 1;
 
-      tracking.set(hostname, data);
+      history.set(hostname, record);
     }
 
-    tracking.forEach((data, hostname) => {
-      console.log(
-        `${hostname} has ${Math.round(
-          100 * (data.ok / data.total)
-        )}% availability percentage`
-      );
-    });
-  });
+    const seen = new Map<string, boolean>();
+    for (const conf of config) {
+      const { hostname } = new URL(conf.url);
+      const record = history.get(hostname);
 
-  try {
-    await run(ac.signal);
-  } catch (error) {
-    if (error.code !== 'ABORT_ERR') {
-      throw error;
+      if (!seen.has(hostname)) {
+        const pct = record ? Math.round(100 * (record.ok / record.total)) : 0;
+        console.log(`${hostname} has ${pct}% availability percentage`);
+        seen.set(hostname, true);
+      }
     }
+  };
+
+  await tick();
+  for await (const _ of setInterval(15_000, undefined, { signal: ac.signal })) {
+    await tick();
   }
 };
 

@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { setTimeout } from 'node:timers/promises';
 import { z } from 'zod';
-import type { Job } from './runner';
+import type { Job } from './job';
 
 export const httpMethodSchema = z.enum([
   'GET',
@@ -15,14 +14,14 @@ export const httpMethodSchema = z.enum([
   'TRACE',
 ]);
 
-export const yoloSchema = z.object({
+export const healthCheckConfigSchema = z.object({
   name: z.string(),
   url: z.string().url(),
   method: httpMethodSchema.optional(),
   headers: z.record(z.string(), z.string()).optional(),
   body: z.string().optional(),
 });
-export type HealthCheckConfig = z.infer<typeof yoloSchema>;
+export type HealthCheckConfig = z.infer<typeof healthCheckConfigSchema>;
 
 export type Check = {
   label: string;
@@ -34,6 +33,12 @@ export type Check = {
     endedAt: number;
     response: Response;
   }) => boolean;
+};
+
+export type CheckResult = {
+  label: string;
+  ok: boolean;
+  ts: number;
 };
 
 const checks: Check[] = [
@@ -49,7 +54,6 @@ const checks: Check[] = [
   // maybe response body checks? `$.status = 'ok'` sorta thing
 ];
 
-// job interface is bleeding into this file but we're just gonna live with that for sake of simplicity
 export const createHealthCheckJob = (
   config: HealthCheckConfig
 ): Job<HealthCheckConfig> => {
@@ -57,9 +61,6 @@ export const createHealthCheckJob = (
     id: randomUUID(),
     config,
     run: async (signal) => {
-      const t = Math.random() * 18000;
-      // console.log('job running', t);
-      await setTimeout(t, undefined, { signal });
       const headers = new Headers(config.headers);
       if (config.body) {
         // TODO: ... should config.headers['content-type'] override?
@@ -84,7 +85,7 @@ export const createHealthCheckJob = (
 
       return checks.map((c) => ({
         label: c.label,
-        passed: c.test({ startedAt, endedAt, response }),
+        ok: c.test({ startedAt, endedAt, response }),
         ts: endedAt,
       }));
     },
