@@ -2,6 +2,12 @@
 
 System for running simple HTTP health checks.
 
+This knocks out a fairly specific set of criteria though leaves the door open
+for extensibility and refactoring. New checks can be added in [`src/health.ts`](https://github.com/OutdatedVersion/health-check-exercise/blob/91670732d9160afff2a1e228b3053437c1664b04/src/health.ts#L44).
+
+There is an approach with a fully evented runner system [available in the commit history](https://github.com/OutdatedVersion/health-check-exercise/commit/727182c6b935dfc49011d4327f82cc41f9836f2a) which
+totally decouples job run time from the runner. Though it was abandoned in favor of simpler.
+
 ## How to 💻
 
 1. Verify Node.js >= 18 is installed: `node --version` and `npm --version`
@@ -11,3 +17,4 @@ System for running simple HTTP health checks.
 1. Clone project
 1. Run `npm clean-install`
 1. Run `npm start`
+   1. Set `DEBUG=health-check:runner` environment variable for more context, if you'd like

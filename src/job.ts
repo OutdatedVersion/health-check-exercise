@@ -27,6 +27,8 @@ export const runJobs = async <JobConfig>(
     jobs.map(async (job) => {
       const jobAbort = new AbortController();
 
+      // we don't wants batches to overlap with each other so
+      // cancel the run right before the next batch runs (with a safety allowance).
       const timeoutId = setTimeout(() => {
         jobAbort.abort('job timed out');
       }, 13_000);
