@@ -10,12 +10,12 @@ totally decouples job run time from the runner. Though it was abandoned in favor
 
 ## How to 💻
 
-1. Verify Node.js >= 18 is installed: `node --version` and `npm --version`
+1. Verify Node.js >= 18 is installed: `node --version`
    - If something >= 18.x.x is printed, continue
    - If not, install Node.js
      - I recommend using [`fnm`](https://github.com/Schniz/fnm) but do [whatever works for you](https://nodejs.org/en/learn/getting-started/how-to-install-nodejs)
-1. Clone project
-1. Run `npm clean-install`
-1. Run `npm start`
+2. Clone project
+3. Run `npm clean-install`
+4. Run `npm start`
    - You can also run it directly with `npm run build && node dist/cli.js`
    - Set `DEBUG=health-check:runner` environment variable for more context, if you'd like
