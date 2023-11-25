@@ -21,7 +21,7 @@ const main = async (args = process.argv.slice(2)) => {
     console.error(
       `${c.bold(c.yellow('example:'))} node cli.js /tmp/health-checks.yaml`
     );
-    process.exit(0);
+    process.exit(1);
   }
 
   // default error provides plenty of info especially considering our audience is developers
