@@ -41,18 +41,15 @@ export type CheckResult = {
   ts: number;
 };
 
-const checks: Check[] = [
-  {
-    label: '2xx status code',
-    test: ({ response }) => response.ok,
-  },
-  {
-    label: 'latency <500ms',
-    test: ({ startedAt, endedAt }) => endedAt - startedAt < 500,
-  },
-  // add more...
-  // maybe response body checks? `$.status = 'ok'` sorta thing
-];
+export const statusCodeCheck: Check = {
+  label: '2xx status code',
+  test: ({ response }) => response.ok,
+};
+
+export const latencyCheck: Check = {
+  label: 'latency <500ms',
+  test: ({ startedAt, endedAt }) => endedAt - startedAt < 500,
+};
 
 export const createHealthCheckJob = (
   config: HealthCheckConfig
@@ -60,7 +57,7 @@ export const createHealthCheckJob = (
   return {
     id: randomUUID(),
     config,
-    run: async (signal) => {
+    run: async (signal, fetch = global.fetch) => {
       const headers = new Headers(config.headers);
       if (config.body) {
         // TODO: ... should config.headers['content-type'] override?
@@ -83,7 +80,7 @@ export const createHealthCheckJob = (
       }
       const endedAt = Date.now();
 
-      return checks.map((c) => ({
+      return [statusCodeCheck, latencyCheck].map((c) => ({
         label: c.label,
         ok: c.test({ startedAt, endedAt, response }),
         ts: endedAt,

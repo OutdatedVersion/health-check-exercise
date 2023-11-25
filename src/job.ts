@@ -3,7 +3,10 @@ import type { CheckResult } from './health';
 export type Job<ConfigType> = {
   id: string;
   config: ConfigType;
-  run: (signal: AbortSignal) => Promise<CheckResult[]>;
+  run: (
+    signal: AbortSignal,
+    fetch?: typeof global.fetch
+  ) => Promise<CheckResult[]>;
 };
 
 export type JobResult<ConfigType> = {
