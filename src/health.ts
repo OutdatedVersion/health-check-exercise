@@ -52,7 +52,7 @@ export const latencyCheck: Check = {
 };
 
 export const createHealthCheckJob = (
-  config: HealthCheckConfig
+  config: HealthCheckConfig,
 ): Job<HealthCheckConfig> => {
   return {
     id: randomUUID(),

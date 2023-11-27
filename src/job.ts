@@ -5,7 +5,7 @@ export type Job<ConfigType> = {
   config: ConfigType;
   run: (
     signal: AbortSignal,
-    fetch?: typeof global.fetch
+    fetch?: typeof global.fetch,
   ) => Promise<CheckResult[]>;
 };
 
@@ -24,7 +24,7 @@ export type JobResult<ConfigType> = {
 
 export const runJobs = async <JobConfig>(
   signal: AbortSignal,
-  jobs: Job<JobConfig>[]
+  jobs: Job<JobConfig>[],
 ): Promise<JobResult<JobConfig>[]> => {
   return Promise.all(
     jobs.map(async (job) => {
@@ -58,6 +58,6 @@ export const runJobs = async <JobConfig>(
         clearTimeout(timeoutId);
         signal.removeEventListener('abort', onRunnerStop);
       }
-    })
+    }),
   );
 };

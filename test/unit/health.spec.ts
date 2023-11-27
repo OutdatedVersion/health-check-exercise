@@ -11,7 +11,7 @@ describe('checks', () => {
       statusCodeCheck.test({
         // @ts-expect-error
         response: { ok: res },
-      })
+      }),
     ).toBe(res);
   });
 
@@ -24,7 +24,7 @@ describe('checks', () => {
       latencyCheck.test({
         startedAt,
         endedAt,
-      })
+      }),
     ).toBe(expected);
   });
 });
@@ -36,7 +36,7 @@ describe('job', () => {
 
   it('happy paths', async () => {
     const fetch = vitest.mocked<typeof global.fetch>(
-      vitest.fn(() => ({ ok: true })) as any
+      vitest.fn(() => ({ ok: true })) as any,
     );
     const ac = new AbortController();
 
@@ -48,13 +48,13 @@ describe('job', () => {
 
     expect(fetch).toBeCalledWith(
       'https://example.com',
-      expect.objectContaining({ method: 'GET' })
+      expect.objectContaining({ method: 'GET' }),
     );
   });
 
   it('sends a json body', async () => {
     const fetch = vitest.mocked<typeof global.fetch>(
-      vitest.fn(() => ({ ok: true })) as any
+      vitest.fn(() => ({ ok: true })) as any,
     );
     const ac = new AbortController();
 
@@ -73,13 +73,13 @@ describe('job', () => {
         headers: new Headers({
           'content-type': 'application/json',
         }),
-      })
+      }),
     );
   });
 
   it('forwards headers', async () => {
     const fetch = vitest.mocked<typeof global.fetch>(
-      vitest.fn(() => ({ ok: true })) as any
+      vitest.fn(() => ({ ok: true })) as any,
     );
     const ac = new AbortController();
 
@@ -100,7 +100,7 @@ describe('job', () => {
       expect.objectContaining({
         method: 'GET',
         body: '{"test": true}',
-      })
+      }),
     );
     expect([...fetch.mock.calls[0][1]?.headers?.entries()]).toEqual([
       ['another', 'thing'],

@@ -16,10 +16,10 @@ const debugLog = debug('health-check:runner');
 const main = async (args = process.argv.slice(2)) => {
   if (args.length < 1) {
     console.error(
-      `${c.bold(c.red('error:'))} expected path to health check job list`
+      `${c.bold(c.red('error:'))} expected path to health check job list`,
     );
     console.error(
-      `${c.bold(c.yellow('example:'))} node cli.js /tmp/health-checks.yaml`
+      `${c.bold(c.yellow('example:'))} node cli.js /tmp/health-checks.yaml`,
     );
     process.exit(1);
   }
@@ -66,9 +66,9 @@ const main = async (args = process.argv.slice(2)) => {
             .map(
               (check) =>
                 ' '.repeat(2) +
-                (check.ok ? c.green(check.label) : c.red(check.label))
+                (check.ok ? c.green(check.label) : c.red(check.label)),
             )
-            .join('\n')}`
+            .join('\n')}`,
         );
       }
 
@@ -84,8 +84,8 @@ const main = async (args = process.argv.slice(2)) => {
         const pct = record ? Math.round(100 * (record.ok / record.total)) : 0;
         console.log(
           `${c.bold(
-            c.blue('info:')
-          )} ${hostname} has ${pct}% availability percentage`
+            c.blue('info:'),
+          )} ${hostname} has ${pct}% availability percentage`,
         );
         seen.set(hostname, true);
       }
