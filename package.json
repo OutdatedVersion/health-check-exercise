@@ -2,11 +2,13 @@
   "scripts": {
     "build": "tsup-node src/cli.ts",
     "start": "npm run build && node dist/cli.js test/fixtures/provided.yaml",
-    "test": "vitest"
+    "test": "vitest",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
     "@types/node": "^18.18.13",
+    "prettier": "^3.1.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.2",
     "vitest": "^0.34.6"
